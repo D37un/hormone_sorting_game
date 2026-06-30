@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Hormone Sorting Adventure</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,11 +37,32 @@
         .shake-effect {
             animation: shake 0.5s ease-in-out;
         }
+        /* ป้องกันการเลื่อนหน้าจอขณะลากการ์ดบนมือถือ */
+        .card-inner {
+            touch-action: none;
+        }
+        .card-inner.is-dragging {
+            transition: none;
+            z-index: 50;
+        }
+        .box-dropzone {
+            touch-action: manipulation;
+        }
+        .box-dropzone.tap-target {
+            animation: pulse-target 1s infinite;
+        }
+        @keyframes pulse-target {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.6); }
+            50% { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+        }
+        @supports (height: 100dvh) {
+            .h-game-screen { height: 100dvh; }
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 overflow-hidden text-slate-800">
+<body class="min-h-screen flex items-center justify-center p-2 sm:p-4 overflow-hidden text-slate-800">
 
-    <div id="screen-login" class="bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-amber-300">
+    <div id="screen-login" class="bg-white/95 backdrop-blur-md p-5 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-amber-300">
         <h1 class="text-4xl font-bold text-indigo-700 mb-2 tracking-wide">Hormone Sorting</h1>
         <p class="text-amber-600 font-semibold mb-6">ผจญภัยในอาณาจักรฮอร์โมน</p>
         <div class="mb-6 text-left">
@@ -54,7 +75,7 @@
         </button>
     </div>
 
-    <div id="screen-menu" class="hidden bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center border-4 border-indigo-400">
+    <div id="screen-menu" class="hidden bg-white/95 backdrop-blur-md p-5 sm:p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center border-4 border-indigo-400">
         <p class="text-gray-500 font-bold mb-1">ยินดีต้อนรับ</p>
         <h2 id="display-student-name" class="text-2xl font-bold text-indigo-600 mb-8"></h2>
         
@@ -79,9 +100,9 @@
             <h3 class="text-2xl font-bold text-orange-600 mb-4 text-center"> กฎกติกาและวิธีการเล่น</h3>
             <ul class="space-y-3 text-gray-700 font-medium text-left">
                 <li class="flex items-start"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">1</span> กดปุ่มเริ่มเกม</li>
-                <li class="flex items-start"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">2</span> เลื่อนฮอร์โมนเข้ากล่องประเภทให้ถูกต้อง</li>
+                <li class="flex items-start"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">2</span> ลากฮอร์โมนจากสายพานไปวางในกล่องที่ถูกต้อง (บนมือถือ: แตะการ์ดสั้นๆ เพื่อเลือก แล้วแตะกล่องที่ต้องการแทนการลากก็ได้)</li>
                 <li class="flex items-start"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">3</span> หากไม่ทราบให้เลื่อนสายพานดูฮอร์โมนอื่นก่อนได้</li>
-                <li class="flex items-start"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">4</span> <b>ระบบคำใบ้:</b> สามารถกดที่กล่องฮอร์โมนซ้ำๆ <b>3 ครั้ง</b> จะเสีย 10 คะแนน โดยฮอร์โมนจะแสดงอวัยวะที่สร้างด้านหลัง</li>
+                <li class="flex items-start"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">4</span> <b>ระบบคำใบ้:</b> กดปุ่มหลอดไฟ 💡 ที่มุมการ์ดซ้ำๆ <b>3 ครั้ง</b> จะเสีย 10 คะแนน โดยฮอร์โมนจะแสดงอวัยวะที่สร้างด้านหลัง</li>
                 <li class="flex items-start"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">+</span> ตอบถูกได้ <b>+100 คะแนน</b> (ฮอร์โมนเข้ากล่องทันที)</li>
                 <li class="flex items-start"><span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">-</span> ตอบผิดหัก <b>-20 คะแนน</b> และของจะเด้งกลับมาที่สายพาน</li>
                 <li class="flex items-start text-rose-600 font-bold"><span class="bg-rose-600 text-white px-2 py-0.5 rounded-full mr-2 text-sm"></span> หากคะแนนต่ำกว่า 0 จะแพ้ทันที!</li>
@@ -92,7 +113,7 @@
         </div>
     </div>
 
-    <div id="screen-instruction" class="hidden bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-emerald-400">
+    <div id="screen-instruction" class="hidden bg-white/95 backdrop-blur-md p-5 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-emerald-400">
         <h2 id="instruction-title" class="text-3xl font-bold text-emerald-600 mb-4"></h2>
         <p id="instruction-desc" class="text-gray-600 mb-6 text-lg font-medium"></p>
         <button onclick="startGame()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all text-xl cursor-pointer">
@@ -100,52 +121,50 @@
         </button>
     </div>
 
-    <div id="screen-game" class="hidden w-full max-w-4xl flex flex-col h-[90vh] justify-between relative">
-        <div class="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg flex justify-between items-center border-2 border-indigo-200">
-            <div>
-                <span class="text-sm font-bold text-indigo-500 block uppercase tracking-wider" id="game-stage-label">STAGE 1</span>
-                <span class="text-xl font-bold text-slate-700" id="game-stage-name">แยกประเภทกล่อง</span>
+    <div id="screen-game" class="hidden w-full max-w-4xl flex flex-col h-[90vh] h-game-screen justify-between relative px-1 sm:px-0">
+        <div class="bg-white/90 backdrop-blur-sm p-2.5 sm:p-4 rounded-2xl shadow-lg flex justify-between items-center border-2 border-indigo-200 gap-2">
+            <div class="min-w-0">
+                <span class="text-[10px] sm:text-sm font-bold text-indigo-500 block uppercase tracking-wider" id="game-stage-label">STAGE 1</span>
+                <span class="text-sm sm:text-xl font-bold text-slate-700 truncate block" id="game-stage-name">แยกประเภทกล่อง</span>
             </div>
-            <div class="text-center bg-indigo-50 px-6 py-2 rounded-xl border border-indigo-100">
-                <span class="text-xs font-bold text-indigo-400 block">SCORE</span>
-                <span class="text-3xl font-bold text-indigo-600" id="game-score">0</span>
+            <div class="text-center bg-indigo-50 px-3 sm:px-6 py-1.5 sm:py-2 rounded-xl border border-indigo-100 shrink-0">
+                <span class="text-[10px] sm:text-xs font-bold text-indigo-400 block">SCORE</span>
+                <span class="text-lg sm:text-3xl font-bold text-indigo-600" id="game-score">0</span>
             </div>
-            <div class="text-right bg-rose-50 px-6 py-2 rounded-xl border border-rose-100">
-                <span class="text-xs font-bold text-rose-400 block">TIME</span>
-                <span class="text-2xl font-mono font-bold text-rose-600" id="game-time">00:00</span>
+            <div class="text-right bg-rose-50 px-3 sm:px-6 py-1.5 sm:py-2 rounded-xl border border-rose-100 shrink-0">
+                <span class="text-[10px] sm:text-xs font-bold text-rose-400 block">TIME</span>
+                <span class="text-sm sm:text-2xl font-mono font-bold text-rose-600" id="game-time">00:00</span>
             </div>
         </div>
 
         <div id="game-status-alert" class="absolute inset-0 flex items-center justify-center pointer-events-none z-40 hidden">
-            <span id="game-status-text" class="text-7xl font-bold px-10 py-4 rounded-3xl shadow-2xl transform scale-150 transition-all duration-300"></span>
+            <span id="game-status-text" class="text-3xl sm:text-7xl font-bold px-5 sm:px-10 py-3 sm:py-4 rounded-3xl shadow-2xl transform scale-150 transition-all duration-300"></span>
         </div>
 
-        <div class="my-auto py-6">
-            <p class="text-center text-white font-bold text-lg mb-4 drop-shadow-md"> ลากฮอร์โมนจากสายพานด้านล่าง ไปวางในกล่องให้ถูกต้อง </p>
-            <div id="boxes-container" class="flex justify-center gap-6 flex-wrap"></div>
+        <div class="my-auto py-3 sm:py-6">
+            <p class="text-center text-white font-bold text-xs sm:text-lg mb-3 sm:mb-4 drop-shadow-md px-2"> แตะการ์ดค้างไว้แล้วลากไปวางในกล่อง หรือแตะการ์ดสั้นๆ เพื่อเลือก แล้วแตะกล่องที่ต้องการ </p>
+            <div id="boxes-container" class="flex justify-center gap-2 sm:gap-6 flex-wrap px-1"></div>
         </div>
 
-        <div class="bg-slate-800/90 backdrop-blur-md p-6 rounded-3xl shadow-2xl border-4 border-slate-700">
-            <div class="flex justify-between items-center mb-3">
-                <span class="text-amber-400 font-bold text-sm flex items-center gap-1">
-                     สายพานลำเลียง (เลื่อนซ้าย-ขวา / กดการ์ดดูคำใบ้ / ลากไปกล่อง)
-                </span>
-                <span class="text-xs text-slate-400" id="conveyor-count">เหลือ 0 ข้อ</span>
+        <div class="bg-slate-800/90 backdrop-blur-md p-3 sm:p-6 rounded-3xl shadow-2xl border-4 border-slate-700">
+            <div class="flex justify-between items-center mb-2 sm:mb-3 gap-2">
+                <span class="text-amber-400 font-bold text-[10px] sm:text-sm flex items-center gap-1"></span>
+                <span class="text-[10px] sm:text-xs text-slate-400" id="conveyor-count">เหลือ 0 ข้อ</span>
             </div>
             
-            <div class="flex items-center gap-4">
-                <button onclick="moveConveyor(-1)" class="bg-slate-700 hover:bg-slate-600 text-white w-12 h-16 rounded-xl font-bold text-2xl transition-all shadow-md active:scale-90 cursor-pointer">&lt;</button>
+            <div class="flex items-center gap-2 sm:gap-4">
+                <button onclick="moveConveyor(-1)" class="bg-slate-700 hover:bg-slate-600 text-white w-10 h-14 sm:w-12 sm:h-16 rounded-xl font-bold text-xl sm:text-2xl transition-all shadow-md active:scale-90 cursor-pointer shrink-0">&lt;</button>
                 
-                <div class="flex-1 bg-slate-900/50 p-4 rounded-2xl h-44 flex items-center justify-center overflow-hidden relative border-2 border-dashed border-slate-600">
-                    <div id="hormone-card-wrapper" class="w-64 h-36 perspective-1000"></div>
+                <div class="flex-1 bg-slate-900/50 p-2 sm:p-4 rounded-2xl h-32 sm:h-44 flex items-center justify-center overflow-visible relative border-2 border-dashed border-slate-600">
+                    <div id="hormone-card-wrapper" class="w-56 sm:w-64 h-28 sm:h-36 perspective-1000 relative"></div>
                 </div>
 
-                <button onclick="moveConveyor(1)" class="bg-slate-700 hover:bg-slate-600 text-white w-12 h-16 rounded-xl font-bold text-2xl transition-all shadow-md active:scale-90 cursor-pointer">&gt;</button>
+                <button onclick="moveConveyor(1)" class="bg-slate-700 hover:bg-slate-600 text-white w-10 h-14 sm:w-12 sm:h-16 rounded-xl font-bold text-xl sm:text-2xl transition-all shadow-md active:scale-90 cursor-pointer shrink-0">&gt;</button>
             </div>
         </div>
     </div>
 
-    <div id="screen-result" class="hidden bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-amber-400">
+    <div id="screen-result" class="hidden bg-white/95 backdrop-blur-md p-5 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-amber-400">
         <h2 id="result-title" class="text-3xl font-bold text-indigo-700 mb-6"> ยินดีด้วย จบด่าน!</h2>
         
         <div class="bg-slate-50 rounded-2xl p-6 mb-6 space-y-4 border border-slate-100">
@@ -168,7 +187,7 @@
         </button>
     </div>
 
-    <div id="screen-gameover" class="hidden bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-rose-500">
+    <div id="screen-gameover" class="hidden bg-white/95 backdrop-blur-md p-5 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-rose-500">
         <span class="text-6xl block mb-2">💀</span>
         <h2 class="text-3xl font-bold text-rose-600 mb-2">GAME OVER</h2>
         <p class="text-gray-600 mb-6 font-medium">คะแนนของคุณต่ำกว่า 0 คะแนน!</p>
@@ -219,6 +238,10 @@
         let hintCountMap = {};          // เก็บจำนวนครั้งที่กดดูคำใบ้ของฮอร์โมนแต่ละตัว (key = hormone.id)
         let isCardFlipped = false;      // สถานะการ์ดปัจจุบันพลิกอยู่หรือไม่
         let isDragging = false;         // กันการลากซ้อนระหว่างที่การ์ดกำลังเด้ง/ลอย
+        let tapSelectedHormone = null;  // ฮอร์โมนที่ถูกแตะเลือกไว้ (โหมดแตะเลือก แล้วแตะกล่องเพื่อวาง สำหรับมือถือ)
+        let activePointerId = null;
+        let dragStartPos = null;
+        let dragMoved = false;
 
         // ฟังก์ชันเปลี่ยนหน้าจอหลัก
         function switchScreen(screenId) {
@@ -322,25 +345,19 @@
 
             boxes.forEach(box => {
                 const boxEl = document.createElement("div");
-                boxEl.className = `box-dropzone w-40 h-32 md:w-48 md:h-36 bg-gradient-to-br ${box.color} rounded-2xl shadow-xl border-b-4 flex flex-col items-center justify-center text-white font-bold text-center p-3 transition-all duration-200 cursor-default`;
+                boxEl.className = `box-dropzone w-[28vw] max-w-40 h-24 sm:w-40 sm:h-32 md:w-48 md:h-36 bg-gradient-to-br ${box.color} rounded-2xl shadow-xl border-b-4 flex flex-col items-center justify-center text-white font-bold text-center p-2 sm:p-3 transition-all duration-200 cursor-pointer select-none`;
                 boxEl.dataset.boxName = box.name;
                 boxEl.innerHTML = `
-                    <span class="text-3xl mb-1">📦</span>
-                    <span class="text-sm md:text-base leading-tight">${box.name}</span>
+                    <span class="text-xl sm:text-3xl mb-0.5 sm:mb-1">📦</span>
+                    <span class="text-[11px] sm:text-sm md:text-base leading-tight">${box.name}</span>
                 `;
 
-                // รองรับการลากด้วยเมาส์ (HTML5 Drag and Drop API)
-                boxEl.addEventListener("dragover", (e) => {
-                    e.preventDefault();
-                    boxEl.classList.add("ring-4", "ring-white", "scale-105");
-                });
-                boxEl.addEventListener("dragleave", () => {
-                    boxEl.classList.remove("ring-4", "ring-white", "scale-105");
-                });
-                boxEl.addEventListener("drop", (e) => {
-                    e.preventDefault();
-                    boxEl.classList.remove("ring-4", "ring-white", "scale-105");
-                    handleDropOnBox(box.name);
+                // กล่องนี้รองรับทั้งการลาก (pointer drag) และการแตะเลือกแล้วกดกล่อง (tap-to-place) สำหรับมือถือ
+                boxEl.addEventListener("click", () => {
+                    if (tapSelectedHormone) {
+                        clearTapSelection();
+                        handleDropOnBox(box.name);
+                    }
                 });
 
                 container.appendChild(boxEl);
@@ -365,15 +382,17 @@
 
             const hormone = currentHormonesList[conveyorIndex];
             isCardFlipped = false;
+            clearTapSelection();
             const hintsUsed = hintCountMap[hormone.id] || 0;
 
             wrapper.innerHTML = `
-                <div id="active-card" class="w-full h-full perspective-1000 ${isDragging ? 'opacity-50' : ''}" style="perspective: 1000px;">
-                    <div id="card-inner" class="card-inner relative w-full h-full cursor-grab active:cursor-grabbing" draggable="true">
-                        <div class="card-front absolute inset-0 bg-white rounded-2xl shadow-lg border-2 border-indigo-200 flex flex-col items-center justify-center p-4">
-                            <span class="text-2xl font-bold text-indigo-700">${hormone.id}</span>
-                            <span class="text-xs text-gray-500 mt-1 text-center">${hormone.full}</span>
-                            <span class="text-[10px] text-amber-500 mt-3">กดเพื่อดูคำใบ้ (ใช้ไปแล้ว ${hintsUsed}/3)</span>
+                <div id="active-card" class="w-full h-full perspective-1000 relative ${isDragging ? 'opacity-50' : ''}" style="perspective: 1000px;">
+                    <button id="hint-btn" type="button" aria-label="ดูคำใบ้" class="absolute -top-3 -right-3 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-amber-400 hover:bg-amber-500 active:scale-90 border-2 border-white shadow-lg flex items-center justify-center text-xl sm:text-2xl transition-all cursor-pointer">💡</button>
+                    <div id="card-inner" class="card-inner relative w-full h-full cursor-grab active:cursor-grabbing">
+                        <div class="card-front absolute inset-0 bg-white rounded-2xl shadow-lg border-2 border-indigo-200 flex flex-col items-center justify-center p-3 sm:p-4">
+                            <span class="text-lg sm:text-2xl font-bold text-indigo-700">${hormone.id}</span>
+                            <span class="text-[10px] sm:text-xs text-gray-500 mt-1 text-center">${hormone.full}</span>
+                            <span class="text-[9px] sm:text-[10px] text-amber-500 mt-2 sm:mt-3" id="hint-used-label">กดหลอดไฟเพื่อดูคำใบ้ (ใช้ไปแล้ว ${Math.min(hintsUsed, 3)}/3)</span>
                         </div>
                         <div class="card-back absolute inset-0 bg-amber-50 rounded-2xl shadow-lg border-2 border-amber-300 flex flex-col items-center justify-center p-4">
                             <span class="text-xs text-amber-600 font-bold mb-1">สร้างจาก</span>
@@ -384,19 +403,88 @@
             `;
 
             const cardInner = document.getElementById("card-inner");
+            const hintBtn = document.getElementById("hint-btn");
 
-            // กดการ์ด = ดูคำใบ้ (พลิกการ์ด)
-            cardInner.addEventListener("click", () => {
+            // ปุ่มหลอดไฟ = ดูคำใบ้ (พลิกการ์ด) แทนการกดที่ตัวการ์ด
+            hintBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
                 handleHintClick(hormone);
             });
 
-            // ลากการ์ด = เริ่ม drag
-            cardInner.addEventListener("dragstart", (e) => {
-                isDragging = true;
-                e.dataTransfer.setData("text/plain", hormone.id);
+            // ลากการ์ด (เมาส์/นิ้ว) ไปยังกล่อง หรือแตะสั้นๆ เพื่อเลือกแล้วไปแตะกล่อง
+            attachCardDragAndTap(cardInner, hormone);
+        }
+
+        // เคลียร์สถานะ "แตะเลือกการ์ดไว้รอแตะกล่อง"
+        function clearTapSelection() {
+            tapSelectedHormone = null;
+            const cardInner = document.getElementById("card-inner");
+            if (cardInner) cardInner.classList.remove("ring-4", "ring-amber-400", "scale-105");
+            document.querySelectorAll(".box-dropzone").forEach(b => b.classList.remove("tap-target"));
+        }
+
+        // ระบบลาก/แตะเลือกของการ์ด รองรับทั้งเมาส์และนิ้วมือถือด้วย Pointer Events
+        function attachCardDragAndTap(cardInner, hormone) {
+            cardInner.addEventListener("pointerdown", (e) => {
+                if (isCardFlipped) return;
+                activePointerId = e.pointerId;
+                dragStartPos = { x: e.clientX, y: e.clientY };
+                dragMoved = false;
+                cardInner.setPointerCapture(e.pointerId);
             });
-            cardInner.addEventListener("dragend", () => {
+
+            cardInner.addEventListener("pointermove", (e) => {
+                if (e.pointerId !== activePointerId || !dragStartPos) return;
+                const dx = e.clientX - dragStartPos.x;
+                const dy = e.clientY - dragStartPos.y;
+                if (!dragMoved && Math.hypot(dx, dy) > 10) {
+                    dragMoved = true;
+                    isDragging = true;
+                    cardInner.classList.add("is-dragging");
+                }
+                if (dragMoved) {
+                    cardInner.style.transform = `translate(${dx}px, ${dy}px)`;
+                    document.querySelectorAll(".box-dropzone").forEach(b => b.classList.remove("ring-4", "ring-white", "scale-105"));
+                    const elUnder = document.elementFromPoint(e.clientX, e.clientY);
+                    const box = elUnder ? elUnder.closest(".box-dropzone") : null;
+                    if (box) box.classList.add("ring-4", "ring-white", "scale-105");
+                }
+            });
+
+            cardInner.addEventListener("pointerup", (e) => {
+                if (e.pointerId !== activePointerId) return;
+                try { cardInner.releasePointerCapture(e.pointerId); } catch (err) {}
+                document.querySelectorAll(".box-dropzone").forEach(b => b.classList.remove("ring-4", "ring-white", "scale-105"));
+
+                if (dragMoved) {
+                    cardInner.style.transform = "";
+                    cardInner.classList.remove("is-dragging");
+                    const elUnder = document.elementFromPoint(e.clientX, e.clientY);
+                    const box = elUnder ? elUnder.closest(".box-dropzone") : null;
+                    if (box) handleDropOnBox(box.dataset.boxName);
+                } else {
+                    // แตะสั้นๆ โดยไม่ลาก = เข้าโหมดแตะเลือก แล้วไปแตะกล่องที่ต้องการ
+                    if (tapSelectedHormone === hormone) {
+                        clearTapSelection();
+                    } else {
+                        tapSelectedHormone = hormone;
+                        cardInner.classList.add("ring-4", "ring-amber-400", "scale-105");
+                        document.querySelectorAll(".box-dropzone").forEach(b => b.classList.add("tap-target"));
+                    }
+                }
                 isDragging = false;
+                dragMoved = false;
+                dragStartPos = null;
+                activePointerId = null;
+            });
+
+            cardInner.addEventListener("pointercancel", () => {
+                cardInner.style.transform = "";
+                cardInner.classList.remove("is-dragging");
+                isDragging = false;
+                dragMoved = false;
+                dragStartPos = null;
+                activePointerId = null;
             });
         }
 
@@ -420,8 +508,8 @@
                 }
 
                 // อัปเดตตัวเลขนับครั้งที่แสดงบนการ์ดหน้า โดยไม่ทำลายการพลิก
-                const hintLabel = cardEl.querySelector(".card-front .text-amber-500");
-                if (hintLabel) hintLabel.innerText = `กดเพื่อดูคำใบ้ (ใช้ไปแล้ว ${Math.min(newCount, 3)}/3)`;
+                const hintLabel = cardEl.querySelector("#hint-used-label");
+                if (hintLabel) hintLabel.innerText = `กดหลอดไฟเพื่อดูคำใบ้ (ใช้ไปแล้ว ${Math.min(newCount, 3)}/3)`;
             }
         }
 
