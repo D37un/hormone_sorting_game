@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hormone Sorting Adventure</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;700&family=Mitr:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Anuphan', 'Mitr', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            user-select: none;
+        }
+        /* เอฟเฟกต์การหมุนการ์ดคำใบ้ */
+        .card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card-flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            backface-visibility: hidden;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        /* แอนิเมชันสำหรับคำว่า ผิด */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        .shake-effect {
+            animation: shake 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 overflow-hidden text-slate-800">
+
+    <div id="screen-login" class="bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-amber-300">
+        <h1 class="text-4xl font-bold text-indigo-700 mb-2 tracking-wide">Hormone Sorting</h1>
+        <p class="text-amber-600 font-semibold mb-6">ผจญภัยในอาณาจักรฮอร์โมน</p>
+        <div class="mb-6 text-left">
+            <label class="block text-gray-700 font-bold mb-2 text-lg">ชื่อจริงและเลขที่ของผู้เล่น:</label>
+            <input type="text" id="student-input" placeholder="ตัวอย่าง: สมชาย เลขที่ 15" 
+                   class="w-full px-4 py-3 rounded-xl border-2 border-indigo-300 focus:outline-none focus:border-indigo-600 text-lg shadow-inner text-center">
+        </div>
+        <button onclick="submitLogin()" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 text-white font-bold py-4 rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all text-xl cursor-pointer">
+            เข้าสู่เกม 
+        </button>
+    </div>
+
+    <div id="screen-menu" class="hidden bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center border-4 border-indigo-400">
+        <p class="text-gray-500 font-bold mb-1">ยินดีต้อนรับ</p>
+        <h2 id="display-student-name" class="text-2xl font-bold text-indigo-600 mb-8"></h2>
+        
+        <div class="space-y-6">
+            <div>
+                <p class="text-xs font-bold text-gray-400 tracking-wider mb-2 uppercase">โหมดเนื้อหา</p>
+                <button onclick="showInstruction()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-5 rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all text-2xl cursor-pointer">
+                     เล่นเกม (ด่าน 1-2)
+                </button>
+            </div>
+            
+            <hr class="border-gray-200 my-4">
+            
+            <button onclick="openHowToPlay()" class="w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold py-3 rounded-2xl shadow-md hover:scale-105 active:scale-95 transition-all text-lg cursor-pointer">
+                 วิธีการเล่น
+            </button>
+        </div>
+    </div>
+
+    <div id="popup-howto" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full border-4 border-amber-400">
+            <h3 class="text-2xl font-bold text-orange-600 mb-4 text-center"> กฎกติกาและวิธีการเล่น</h3>
+            <ul class="space-y-3 text-gray-700 font-medium text-left">
+                <li class="flex items-start"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">1</span> กดปุ่มเริ่มเกม</li>
+                <li class="flex items-start"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">2</span> เลื่อนฮอร์โมนเข้ากล่องประเภทให้ถูกต้อง</li>
+                <li class="flex items-start"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">3</span> หากไม่ทราบให้เลื่อนสายพานดูฮอร์โมนอื่นก่อนได้</li>
+                <li class="flex items-start"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">4</span> <b>ระบบคำใบ้:</b> สามารถกดที่กล่องฮอร์โมนซ้ำๆ <b>3 ครั้ง</b> จะเสีย 10 คะแนน โดยฮอร์โมนจะแสดงอวัยวะที่สร้างด้านหลัง</li>
+                <li class="flex items-start"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">+</span> ตอบถูกได้ <b>+100 คะแนน</b> (ฮอร์โมนเข้ากล่องทันที)</li>
+                <li class="flex items-start"><span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full mr-2 text-sm font-bold">-</span> ตอบผิดหัก <b>-20 คะแนน</b> และของจะเด้งกลับมาที่สายพาน</li>
+                <li class="flex items-start text-rose-600 font-bold"><span class="bg-rose-600 text-white px-2 py-0.5 rounded-full mr-2 text-sm"></span> หากคะแนนต่ำกว่า 0 จะแพ้ทันที!</li>
+            </ul>
+            <button onclick="closeHowToPlay()" class="mt-6 w-full bg-slate-700 text-white font-bold py-2.5 rounded-xl hover:bg-slate-800 transition-all cursor-pointer">
+                เข้าใจแล้ว
+            </button>
+        </div>
+    </div>
+
+    <div id="screen-instruction" class="hidden bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-emerald-400">
+        <h2 id="instruction-title" class="text-3xl font-bold text-emerald-600 mb-4"></h2>
+        <p id="instruction-desc" class="text-gray-600 mb-6 text-lg font-medium"></p>
+        <button onclick="startGame()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all text-xl cursor-pointer">
+             เริ่มเล่นเกมเลย!
+        </button>
+    </div>
+
+    <div id="screen-game" class="hidden w-full max-w-4xl flex flex-col h-[90vh] justify-between relative">
+        <div class="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg flex justify-between items-center border-2 border-indigo-200">
+            <div>
+                <span class="text-sm font-bold text-indigo-500 block uppercase tracking-wider" id="game-stage-label">STAGE 1</span>
+                <span class="text-xl font-bold text-slate-700" id="game-stage-name">แยกประเภทกล่อง</span>
+            </div>
+            <div class="text-center bg-indigo-50 px-6 py-2 rounded-xl border border-indigo-100">
+                <span class="text-xs font-bold text-indigo-400 block">SCORE</span>
+                <span class="text-3xl font-bold text-indigo-600" id="game-score">0</span>
+            </div>
+            <div class="text-right bg-rose-50 px-6 py-2 rounded-xl border border-rose-100">
+                <span class="text-xs font-bold text-rose-400 block">TIME</span>
+                <span class="text-2xl font-mono font-bold text-rose-600" id="game-time">00:00</span>
+            </div>
+        </div>
+
+        <div id="game-status-alert" class="absolute inset-0 flex items-center justify-center pointer-events-none z-40 hidden">
+            <span id="game-status-text" class="text-7xl font-bold px-10 py-4 rounded-3xl shadow-2xl transform scale-150 transition-all duration-300"></span>
+        </div>
+
+        <div class="my-auto py-6">
+            <p class="text-center text-white font-bold text-lg mb-4 drop-shadow-md"> ลากฮอร์โมนจากสายพานด้านล่าง ไปวางในกล่องให้ถูกต้อง </p>
+            <div id="boxes-container" class="flex justify-center gap-6 flex-wrap"></div>
+        </div>
+
+        <div class="bg-slate-800/90 backdrop-blur-md p-6 rounded-3xl shadow-2xl border-4 border-slate-700">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-amber-400 font-bold text-sm flex items-center gap-1">
+                     สายพานลำเลียง (เลื่อนซ้าย-ขวา / กดการ์ดดูคำใบ้ / ลากไปกล่อง)
+                </span>
+                <span class="text-xs text-slate-400" id="conveyor-count">เหลือ 0 ข้อ</span>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="moveConveyor(-1)" class="bg-slate-700 hover:bg-slate-600 text-white w-12 h-16 rounded-xl font-bold text-2xl transition-all shadow-md active:scale-90 cursor-pointer">&lt;</button>
+                
+                <div class="flex-1 bg-slate-900/50 p-4 rounded-2xl h-44 flex items-center justify-center overflow-hidden relative border-2 border-dashed border-slate-600">
+                    <div id="hormone-card-wrapper" class="w-64 h-36 perspective-1000"></div>
+                </div>
+
+                <button onclick="moveConveyor(1)" class="bg-slate-700 hover:bg-slate-600 text-white w-12 h-16 rounded-xl font-bold text-2xl transition-all shadow-md active:scale-90 cursor-pointer">&gt;</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-result" class="hidden bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-amber-400">
+        <h2 id="result-title" class="text-3xl font-bold text-indigo-700 mb-6"> ยินดีด้วย จบด่าน!</h2>
+        
+        <div class="bg-slate-50 rounded-2xl p-6 mb-6 space-y-4 border border-slate-100">
+            <div class="flex justify-between items-center border-b pb-2 border-slate-200">
+                <span class="text-gray-500 font-bold">ผู้เล่น:</span>
+                <span id="result-player" class="text-lg font-bold text-slate-800"></span>
+            </div>
+            <div class="flex justify-between items-center border-b pb-2 border-slate-200">
+                <span class="text-gray-500 font-bold">คะแนนที่ได้ในด่านนี้:</span>
+                <span id="result-score" class="text-2xl font-bold text-emerald-600">0</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-500 font-bold">เวลาที่ใช้ทั้งหมด:</span>
+                <span id="result-time" class="text-2xl font-mono font-bold text-rose-600">00:00</span>
+            </div>
+        </div>
+
+        <button id="result-next-btn" onclick="nextAction()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all text-xl cursor-pointer">
+            ลุยด่านต่อไป 
+        </button>
+    </div>
+
+    <div id="screen-gameover" class="hidden bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-rose-500">
+        <span class="text-6xl block mb-2">💀</span>
+        <h2 class="text-3xl font-bold text-rose-600 mb-2">GAME OVER</h2>
+        <p class="text-gray-600 mb-6 font-medium">คะแนนของคุณต่ำกว่า 0 คะแนน!</p>
+        
+        <button onclick="restartGameEntirely()" class="w-full bg-gradient-to-r from-rose-500 to-orange-500 text-white font-bold py-4 rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all text-xl cursor-pointer">
+             ลองใหม่อีกครั้ง
+        </button>
+    </div>
+
+    <script>
+        // 1. คลังข้อมูลฮอร์โมนทั้งหมดตามโจทย์
+        const HORMONE_DATA = [
+            { id: "TSH", full: "Thyroid-Stimulating Hormone", source: "ต่อมใต้สมองส่วนหน้า", stage1: "Tropic", stage2: "เพปไทด์หรือโปรตีน" },
+            { id: "ACTH", full: "Adrenocorticotropic Hormone", source: "ต่อมใต้สมองส่วนหน้า", stage1: "Tropic", stage2: "เพปไทด์หรือโปรตีน" },
+            { id: "FSH", full: "Follicle-Stimulating Hormone", source: "ต่อมใต้สมองส่วนหน้า", stage1: "Tropic", stage2: "เพปไทด์หรือโปรตีน" },
+            { id: "LH", full: "Luteinizing Hormone", source: "ต่อมใต้สมองส่วนหน้า", stage1: "Tropic", stage2: "เพปไทด์หรือโปรตีน" },
+            { id: "GH", full: "Growth Hormone", source: "ต่อมใต้สมองส่วนหน้า", stage1: "Non-tropic", stage2: "เพปไทด์หรือโปรตีน" },
+            { id: "PRL", full: "Prolactin", source: "ต่อมใต้สมองส่วนหน้า", stage1: "Non-tropic", stage2: "เพปไทด์หรือโปรตีน" },
+            { id: "ADH", full: "Antidiuretic Hormone / Vasopressin", source: "ไฮโปทาลามัส (ปล่อยจากต่อมใต้สมองส่วนหลัง)", stage1: "Non-tropic", stage2: "เพปไทด์หรือโปรตีน" },
+            { id: "OT", full: "Oxytocin", source: "ไฮโปทาลามัส (ปล่อยจากต่อมใต้สมองส่วนหลัง)", stage1: "Non-tropic", stage2: "เพปไทด์หรือโปรตีน" },
+            { id: "T3", full: "Triiodothyronine", source: "ต่อมไทรอยด์", stage1: "Non-tropic", stage2: "เอมีนหรืออนุพันธ์กรดไขมัน" },
+            { id: "T4", full: "Thyroxine", source: "ต่อมไทรอยด์", stage1: "Non-tropic", stage2: "เอมีนหรืออนุพันธ์กรดไขมัน" },
+            { id: "PTH", full: "Parathyroid Hormone", source: "ต่อมพาราไทรอยด์", stage1: "Non-tropic", stage2: "เพปไทด์หรือโปรตีน" },
+            { id: "Insulin", full: "Insulin", source: "ตับอ่อน (เบต้าเซลล์)", stage1: "Non-tropic", stage2: "เพปไทด์หรือโปรตีน" },
+            { id: "Glucagon", full: "Glucagon", source: "ตับอ่อน (แอลฟาเซลล์)", stage1: "Non-tropic", stage2: "เพปไทด์หรือโปรตีน" },
+            { id: "EPI", full: "Epinephrine / Adrenaline", source: "ต่อมหมวกไตส่วนใน (อะดรีนัลเมดัลลา)", stage1: "Non-tropic", stage2: "เอมีนหรืออนุพันธ์กรดไขมัน" },
+            { id: "NE", full: "Norepinephrine / Noradrenaline", source: "ต่อมหมวกไตส่วนใน (อะดรีนัลเมดัลลา)", stage1: "Non-tropic", stage2: "เอมีนหรืออนุพันธ์กรดไขมัน" },
+            { id: "Cortisol", full: "Cortisol", source: "ต่อมหมวกไตส่วนนอก", stage1: "Non-tropic", stage2: "สเตียรอยด์" },
+            { id: "Melatonin", full: "Melatonin", source: "ต่อมไพเนียล", stage1: "Non-tropic", stage2: "เอมีนหรืออนุพันธ์กรดไขมัน" },
+            { id: "Estrogen", full: "Estrogen", source: "รังไข่", stage1: "Non-tropic", stage2: "สเตียรอยด์" },
+            { id: "Progesterone", full: "Progesterone", source: "รังไข่", stage1: "Non-tropic", stage2: "สเตียรอยด์" },
+            { id: "Testosterone", full: "Testosterone", source: "อัณฑะ", stage1: "Non-tropic", stage2: "สเตียรอยด์" }
+        ];
+
+        // 2. ตัวแปรสถานะของเกม (State Variables)
+        let currentStage = 1; 
+        let studentName = "";
+        let score = 0; 
+        let stage1Score = 0; 
+        let stage2Score = 0; 
+        let timerInterval = null;
+        let timeElapsed = 0; 
+        
+        let currentHormonesList = [];   // ฮอร์โมนทั้งหมดที่ยังไม่ถูกจัดเข้ากล่องในด่านนี้
+        let conveyorIndex = 0;          // ตำแหน่งการ์ดที่กำลังโชว์บนสายพาน
+        let sortedCount = 0;            // จำนวนฮอร์โมนที่จัดเข้ากล่องถูกต้องแล้วในด่านนี้
+        let totalInStage = 0;           // จำนวนฮอร์โมนทั้งหมดในด่านนี้ (ไว้เทียบ progress)
+        let hintCountMap = {};          // เก็บจำนวนครั้งที่กดดูคำใบ้ของฮอร์โมนแต่ละตัว (key = hormone.id)
+        let isCardFlipped = false;      // สถานะการ์ดปัจจุบันพลิกอยู่หรือไม่
+        let isDragging = false;         // กันการลากซ้อนระหว่างที่การ์ดกำลังเด้ง/ลอย
+
+        // ฟังก์ชันเปลี่ยนหน้าจอหลัก
+        function switchScreen(screenId) {
+            document.getElementById("screen-login").classList.add("hidden");
+            document.getElementById("screen-menu").classList.add("hidden");
+            document.getElementById("screen-instruction").classList.add("hidden");
+            document.getElementById("screen-game").classList.add("hidden");
+            document.getElementById("screen-result").classList.add("hidden");
+            document.getElementById("screen-gameover").classList.add("hidden");
+            
+            document.getElementById(screenId).classList.remove("hidden");
+        }
+
+        // ================= หน้าลงทะเบียน =================
+        function submitLogin() {
+            const input = document.getElementById("student-input").value.trim();
+            if (input === "") {
+                alert("กรุณากรอกชื่อจริงและเลขที่ก่อนเข้าเกมครับ ");
+                return;
+            }
+            studentName = input;
+            document.getElementById("display-student-name").innerText = studentName;
+            switchScreen("screen-menu");
+        }
+
+        // ================= ระบบวิธีเล่นป๊อปอัพ =================
+        function openHowToPlay() {
+            document.getElementById("popup-howto").classList.remove("hidden");
+        }
+        function closeHowToPlay() {
+            document.getElementById("popup-howto").classList.add("hidden");
+        }
+
+        // ================= หน้าจอแนะนำด่านก่อนเริ่ม =================
+        function showInstruction() {
+            const title = document.getElementById("instruction-title");
+            const desc = document.getElementById("instruction-desc");
+            
+            if (currentStage === 1) {
+                title.innerText = " ด่านที่ 1: Tropic vs Non-Tropic";
+                desc.innerText = "จำแนกฮอร์โมนออกเป็น 2 ประเภท คือ ฮอร์โมนที่กระตุ้นต่อมไร้ท่ออื่น (Tropic hormone) และฮอร์โมนที่ออกฤทธิ์ต่อเนื้อเยื่อร่างกายโดยตรง (Non-tropic hormone)";
+            } else {
+                title.innerText = " ด่านที่ 2: โครงสร้างเคมีของฮอร์โมน";
+                desc.innerText = "จำแนกฮอร์โมนตามลักษณะโครงสร้างทางเคมีออกเป็น 3 กลุ่ม ได้แก่ เพปไทด์หรือโปรตีน, เอมีนหรืออนุพันธ์กรดไขมัน, และสเตียรอยด์";
+            }
+            score = 0; 
+            switchScreen("screen-instruction");
+        }
+
+        // ================= เริ่มต้นระบบด่านเกมหลัก =================
+        function startGame() {
+            switchScreen("screen-game");
+            
+            document.getElementById("game-stage-label").innerText = `STAGE ${currentStage}`;
+            document.getElementById("game-score").innerText = score;
+            
+            // คัดลอกและสลับสับเปลี่ยนฮอร์โมน (Shuffle)
+            currentHormonesList = [...HORMONE_DATA].sort(() => Math.random() - 0.5);
+            conveyorIndex = 0;
+            hintCountMap = {};
+            sortedCount = 0;
+            totalInStage = currentHormonesList.length;
+
+            // สร้างกล่องรับของประจำด่าน
+            buildBoxes();
+            // อัปเดตแสดงการ์ดบนสายพาน
+            updateConveyor();
+            
+            // เริ่มต้นระบบจับเวลา
+            timeElapsed = 0;
+            document.getElementById("game-time").innerText = "00:00";
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+                const mins = String(Math.floor(timeElapsed / 60)).padStart(2, '0');
+                const secs = String(timeElapsed % 60).padStart(2, '0');
+                document.getElementById("game-time").innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        // ฟังก์ชันสร้างกล่องตามด่าน พร้อมระบบรับการลากของ (drop zone)
+        function buildBoxes() {
+            const container = document.getElementById("boxes-container");
+            container.innerHTML = "";
+            
+            let boxes = [];
+            if (currentStage === 1) {
+                document.getElementById("game-stage-name").innerText = "Tropic vs Non-Tropic";
+                boxes = [
+                    { name: "Tropic", color: "from-blue-500 to-indigo-600 border-indigo-700" },
+                    { name: "Non-tropic", color: "from-pink-500 to-rose-600 border-rose-700" }
+                ];
+            } else {
+                document.getElementById("game-stage-name").innerText = "ประเภทโครงสร้างเคมี";
+                boxes = [
+                    { name: "เพปไทด์หรือโปรตีน", color: "from-emerald-500 to-teal-600 border-emerald-700" },
+                    { name: "เอมีนหรืออนุพันธ์กรดไขมัน", color: "from-amber-500 to-orange-600 border-orange-700" },
+                    { name: "สเตียรอยด์", color: "from-purple-500 to-violet-600 border-violet-700" }
+                ];
+            }
+
+            boxes.forEach(box => {
+                const boxEl = document.createElement("div");
+                boxEl.className = `box-dropzone w-40 h-32 md:w-48 md:h-36 bg-gradient-to-br ${box.color} rounded-2xl shadow-xl border-b-4 flex flex-col items-center justify-center text-white font-bold text-center p-3 transition-all duration-200 cursor-default`;
+                boxEl.dataset.boxName = box.name;
+                boxEl.innerHTML = `
+                    <span class="text-3xl mb-1">📦</span>
+                    <span class="text-sm md:text-base leading-tight">${box.name}</span>
+                `;
+
+                // รองรับการลากด้วยเมาส์ (HTML5 Drag and Drop API)
+                boxEl.addEventListener("dragover", (e) => {
+                    e.preventDefault();
+                    boxEl.classList.add("ring-4", "ring-white", "scale-105");
+                });
+                boxEl.addEventListener("dragleave", () => {
+                    boxEl.classList.remove("ring-4", "ring-white", "scale-105");
+                });
+                boxEl.addEventListener("drop", (e) => {
+                    e.preventDefault();
+                    boxEl.classList.remove("ring-4", "ring-white", "scale-105");
+                    handleDropOnBox(box.name);
+                });
+
+                container.appendChild(boxEl);
+            });
+        }
+
+        // ================= ระบบสายพานและการ์ดฮอร์โมน =================
+        function moveConveyor(direction) {
+            if (currentHormonesList.length === 0) return;
+            conveyorIndex = (conveyorIndex + direction + currentHormonesList.length) % currentHormonesList.length;
+            updateConveyor();
+        }
+
+        function updateConveyor() {
+            const wrapper = document.getElementById("hormone-card-wrapper");
+            document.getElementById("conveyor-count").innerText = `เหลือ ${currentHormonesList.length} ข้อ`;
+
+            if (currentHormonesList.length === 0) {
+                wrapper.innerHTML = "";
+                return;
+            }
+
+            const hormone = currentHormonesList[conveyorIndex];
+            isCardFlipped = false;
+            const hintsUsed = hintCountMap[hormone.id] || 0;
+
+            wrapper.innerHTML = `
+                <div id="active-card" class="w-full h-full perspective-1000 ${isDragging ? 'opacity-50' : ''}" style="perspective: 1000px;">
+                    <div id="card-inner" class="card-inner relative w-full h-full cursor-grab active:cursor-grabbing" draggable="true">
+                        <div class="card-front absolute inset-0 bg-white rounded-2xl shadow-lg border-2 border-indigo-200 flex flex-col items-center justify-center p-4">
+                            <span class="text-2xl font-bold text-indigo-700">${hormone.id}</span>
+                            <span class="text-xs text-gray-500 mt-1 text-center">${hormone.full}</span>
+                            <span class="text-[10px] text-amber-500 mt-3">กดเพื่อดูคำใบ้ (ใช้ไปแล้ว ${hintsUsed}/3)</span>
+                        </div>
+                        <div class="card-back absolute inset-0 bg-amber-50 rounded-2xl shadow-lg border-2 border-amber-300 flex flex-col items-center justify-center p-4">
+                            <span class="text-xs text-amber-600 font-bold mb-1">สร้างจาก</span>
+                            <span class="text-sm font-bold text-amber-800 text-center">${hormone.source}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const cardInner = document.getElementById("card-inner");
+
+            // กดการ์ด = ดูคำใบ้ (พลิกการ์ด)
+            cardInner.addEventListener("click", () => {
+                handleHintClick(hormone);
+            });
+
+            // ลากการ์ด = เริ่ม drag
+            cardInner.addEventListener("dragstart", (e) => {
+                isDragging = true;
+                e.dataTransfer.setData("text/plain", hormone.id);
+            });
+            cardInner.addEventListener("dragend", () => {
+                isDragging = false;
+            });
+        }
+
+        // กดการ์ดเพื่อดูคำใบ้ พลิกโชว์ source ด้านหลัง
+        function handleHintClick(hormone) {
+            const cardEl = document.getElementById("active-card");
+            isCardFlipped = !isCardFlipped;
+            cardEl.classList.toggle("card-flipped", isCardFlipped);
+
+            // นับครั้งเฉพาะตอนพลิกไปดูด้านหลัง (ไม่นับตอนพลิกกลับ)
+            if (isCardFlipped) {
+                const used = hintCountMap[hormone.id] || 0;
+                const newCount = used + 1;
+                hintCountMap[hormone.id] = newCount;
+
+                if (newCount === 3) {
+                    score -= 10;
+                    if (score < 0) score = 0; // กันคะแนนติดลบจากคำใบ้อย่างเดียว ค่อยเช็ค gameover ตอนตอบผิดจริง
+                    document.getElementById("game-score").innerText = score;
+                    showStatusAlert("-10 คะแนน", "text-amber-600 bg-amber-100");
+                }
+
+                // อัปเดตตัวเลขนับครั้งที่แสดงบนการ์ดหน้า โดยไม่ทำลายการพลิก
+                const hintLabel = cardEl.querySelector(".card-front .text-amber-500");
+                if (hintLabel) hintLabel.innerText = `กดเพื่อดูคำใบ้ (ใช้ไปแล้ว ${Math.min(newCount, 3)}/3)`;
+            }
+        }
+
+        // ================= ระบบตรวจคำตอบเมื่อปล่อยการ์ดลงกล่อง =================
+        function handleDropOnBox(boxName) {
+            if (currentHormonesList.length === 0) return;
+
+            const hormone = currentHormonesList[conveyorIndex];
+            const correctAnswer = currentStage === 1 ? hormone.stage1 : hormone.stage2;
+            const isCorrect = correctAnswer === boxName;
+
+            if (isCorrect) {
+                score += 100;
+                currentHormonesList.splice(conveyorIndex, 1);
+                sortedCount++;
+                if (conveyorIndex >= currentHormonesList.length) conveyorIndex = 0;
+
+                document.getElementById("game-score").innerText = score;
+                showStatusAlert("ถูกต้อง! +100", "text-emerald-600 bg-emerald-100");
+
+                if (currentHormonesList.length === 0) {
+                    endStage();
+                    return;
+                }
+                updateConveyor();
+            } else {
+                score -= 20;
+                document.getElementById("game-score").innerText = score;
+                showStatusAlert("ผิด! -20", "text-rose-600 bg-rose-100");
+
+                const cardEl = document.getElementById("active-card");
+                if (cardEl) {
+                    cardEl.classList.add("shake-effect");
+                    setTimeout(() => cardEl.classList.remove("shake-effect"), 500);
+                }
+
+                if (score < 0) {
+                    triggerGameOver();
+                    return;
+                }
+            }
+        }
+
+        // แสดงข้อความลอยกลางจอชั่วคราว (ถูก/ผิด/หักคำใบ้)
+        function showStatusAlert(text, classes) {
+            const alertBox = document.getElementById("game-status-alert");
+            const alertText = document.getElementById("game-status-text");
+            alertText.className = `text-7xl font-bold px-10 py-4 rounded-3xl shadow-2xl transform scale-150 transition-all duration-300 ${classes}`;
+            alertText.innerText = text;
+            alertBox.classList.remove("hidden");
+            setTimeout(() => {
+                alertBox.classList.add("hidden");
+            }, 700);
+        }
+
+        // ================= จบด่าน / แพ้เกม =================
+        function endStage() {
+            if (timerInterval) clearInterval(timerInterval);
+
+            document.getElementById("result-title").innerText = currentStage === 1
+                ? " ยินดีด้วย จบด่านที่ 1!"
+                : " ยินดีด้วย จบเกมครบทุกด่าน!";
+            document.getElementById("result-player").innerText = studentName;
+            document.getElementById("result-score").innerText = score;
+            document.getElementById("result-time").innerText = document.getElementById("game-time").innerText;
+
+            const nextBtn = document.getElementById("result-next-btn");
+            if (currentStage === 1) {
+                nextBtn.innerText = "ลุยด่านต่อไป ";
+            } else {
+                nextBtn.innerText = "กลับสู่เมนูหลัก";
+            }
+
+            switchScreen("screen-result");
+        }
+
+        function triggerGameOver() {
+            if (timerInterval) clearInterval(timerInterval);
+            switchScreen("screen-gameover");
+        }
+
+        // ปุ่ม "ลุยด่านต่อไป" ในหน้าผลลัพธ์
+        function nextAction() {
+            if (currentStage === 1) {
+                currentStage = 2;
+                showInstruction();
+            } else {
+                currentStage = 1;
+                switchScreen("screen-menu");
+            }
+        }
+
+        // ปุ่มลองใหม่จากหน้า Game Over กลับไปเริ่มด่าน 1 ใหม่ทั้งหมด
+        function restartGameEntirely() {
+            currentStage = 1;
+            score = 0;
+            switchScreen("screen-menu");
+        }
+    </script>
+</body>
+</html>
